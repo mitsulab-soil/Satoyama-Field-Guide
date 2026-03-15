@@ -1,2 +1,110 @@
-# Satoyama-Field-Guide
-里山の生態系・環境・暮らし・農業・文化を体系的に学べる、モバイルファーストのインタラクティブフィールドガイド／A mobile-first interactive field guide that allows you to systematically learn about the ecosystem, environment, lifestyle, agriculture, and culture of rural areas.
+# 里山のしおり — Satoyama Field Guide
+
+（GitHub Pages）
+
+---
+
+## 概要
+
+里山の生態系・環境・暮らし・農業・文化を体系的に学べる、モバイルファーストのインタラクティブフィールドガイドです。
+
+里山フィールドワーカーのための「デジタルしおり」。単一HTMLファイルで動作し、インストール不要・オフライン対応です。
+
+### 主な機能
+
+| タブ | 内容 |
+|------|------|
+| ⛰️ 里山 | トップページ・季節切り替え・おすすめ散策コース（全8コース） |
+| 🌳 環境 | 6つの環境（雑木林・谷戸・棚田・小川・草地・林縁）の詳細解説、土壌・観察ポイント・生き物 |
+| 🦋 生態系 | 40種超の動植物・菌類・土壌生物の図鑑、発見記録トラッカー付き |
+| 🏡 暮らし | 農業・山仕事・里山文化（草堆肥、炭焼き、発酵食文化など）の解説 |
+| 🌀 醸す谷 | 三層の発酵サイクル（一次〜三次発酵）でとらえる里山循環の哲学 + ミニクイズ |
+
+### 特徴
+
+- **季節モード** — 春夏秋冬でUI・グラデーション・パーティクルアニメーションが変化
+- **発見記録** — 生態系図鑑で「発見した！」ボタンによる種ごとの記録（コンプリート機能付き）
+- **醸す谷（Vallis Fermenti）** — 土木・農・発酵・コミュニティを三層サイクルで統合する独自哲学
+- **完全スタンドアロン** — CDN読み込みを除き外部依存なし、単一HTMLファイル
+
+---
+
+## 使い方
+
+```bash
+# リポジトリをクローン
+git clone https://github.com/mitsulab/satoyama-field-guide.git
+cd satoyama-field-guide
+
+# ブラウザで直接開く（サーバー不要）
+open satoyama-field-guide.html
+```
+
+またはそのままブラウザにドラッグ＆ドロップするだけで動作します。
+
+---
+
+## 技術構成
+
+| 項目 | 詳細 |
+|------|------|
+| フロントエンド | React 18（UMD）+ Babel Standalone（JSXトランスパイル） |
+| スタイル | インラインCSS（外部CSSファイルなし） |
+| フォント | Shippori Mincho / Zen Maru Gothic（Google Fonts） |
+| 依存ライブラリ | React 18.3.1, ReactDOM 18.3.1, Babel Standalone 7.26.5（すべてCDN） |
+| 状態管理 | React `useState`のみ（外部ライブラリなし） |
+| 配布形式 | 単一HTMLファイル |
+
+> **Note:** Babel Standalone はブラウザ内でJSXをリアルタイムにトランスパイルするため、本番運用では事前コンパイルを推奨します。このプロジェクトではフィールドでの配布・閲覧のしやすさを優先し、単一ファイル構成を採用しています。
+
+---
+
+## ファイル構成
+
+```
+satoyama-field-guide/
+└── satoyama-field-guide.html   # すべてを含む単一ファイル
+```
+
+---
+
+## 醸す谷（Vallis Fermenti）について
+
+「醸す谷」は mitsulab が開発中の里山実践フレームワークです。
+
+```
+一次発酵（土・大地のインフラ）
+    ↓
+二次発酵（食・農の循環）
+    ↓
+三次発酵（人・地域のつながり）
+    ↻（循環）
+```
+
+土壌微生物の営み（一次）→ 作物と発酵食品（二次）→ コミュニティと文化（三次）という三層構造で里山を読み解きます。詳細は [note.com/mitsulab](https://note.com/mitsulab) を参照ください。
+
+---
+
+## 対象ユーザー
+
+- 里山フィールドワーク・自然観察に出かける方
+- 有機農業・草農法・有機土木に関心のある方
+- 土壌医・ビオトープ管理者などの資格学習中の方
+- 里山環境教育・自然解説のインタープリター
+
+---
+
+## ライセンス
+
+MIT License — 自由に利用・改変・再配布可能です。
+コンテンツ（解説文・データ）の引用・転載時は出典（mitsulab）の明示をお願いします。
+
+---
+
+## 作者
+
+**mitsulab** (上原光瑛)  
+有機土木・草農法・里山管理の実践者。醸す谷（Vallis Fermenti）プロジェクト主宰。
+
+- GitHub: [@mitsulab](https://github.com/mitsulab)
+- note: [note.com/mitsulab](https://note.com/mitsulab)
