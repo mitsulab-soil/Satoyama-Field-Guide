@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>里山のしおり — mitsulab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700;800&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;overflow-x:hidden}
+body{font-family:'Zen Maru Gothic','Hiragino Maru Gothic Pro',sans-serif;min-height:100vh}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:#d7ccc8;border-radius:3px}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fall{0%{transform:translateY(-40px) rotate(0);opacity:0}10%{opacity:.18}90%{opacity:.06}100%{transform:translateY(105vh) rotate(360deg);opacity:0}}
+button{font-family:inherit}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+// Suppress Babel in-browser transpiler warning (production use should precompile)
+(function(){const w=console.warn.bind(console);console.warn=function(...a){if(typeof a[0]==='string'&&a[0].includes('Babel'))return;w(...a);};})();
+</script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.5/babel.min.js"></script>
+<script type="text/babel" data-presets="react">
+const {useState} = React;
+const FT = "'Shippori Mincho','Noto Serif JP',serif";
+const FB = "'Zen Maru Gothic','Hiragino Maru Gothic Pro',sans-serif";
+
+const SEASONS = {
+  spring:{label:"春",emoji:"🌸",particle:"🌸",grad:"linear-gradient(160deg,#fce4ec 0%,#f1f8e9 40%,#e8f5e9 100%)",accent:"#ad1457"},
+  summer:{label:"夏",emoji:"🌿",particle:"🍃",grad:"linear-gradient(160deg,#e8f5e9 0%,#f9fbe7 40%,#fffde7 100%)",accent:"#2e7d32"},
+  autumn:{label:"秋",emoji:"🍂",particle:"🍂",grad:"linear-gradient(160deg,#fff3e0 0%,#fbe9e7 40%,#efebe9 100%)",accent:"#bf360c"},
+  winter:{label:"冬",emoji:"❄️",particle:"❄️",grad:"linear-gradient(160deg,#eceff1 0%,#e3f2fd 40%,#f5f5f5 100%)",accent:"#37474f"},
+};
+const curSeason = () => { const m = new Date().getMonth(); return m>=2&&m<=4?"spring":m>=5&&m<=7?"summer":m>=8&&m<=10?"autumn":"winter"; };
+
+const TABS = [
+  {id:"home",label:"里山",icon:"⛰️"},
+  {id:"env",label:"環境",icon:"🌳"},
+  {id:"life",label:"生態系",icon:"🦋"},
+  {id:"living",label:"暮らし",icon:"🏡"},
+  {id:"ferment",label:"醸す谷",icon:"🌀"},
+];
+
+/* ═══════════ DATA: 環境 ═══════════ */
+
+const ENVS = [
+  {id:"z",name:"雑木林",icon:"🌳",color:"#4caf50",
+    summary:"コナラ・クヌギを中心とした落葉広葉樹の森。里山の骨格をなす。",
+    detail:"雑木林は里山の面積の多くを占め、かつては薪炭林として15〜20年周期で伐採と萌芽更新が繰り返されてきた。この「計画的な撹乱」こそが雑木林の多様性の源泉だ。伐採直後は地面に光が差し込み、カタクリやスミレといった林床の春植物が一斉に花を咲かせる。やがてアカメガシワやヌルデなどの先駆樹種が育ち、10年ほどでコナラやクヌギの若木が林冠を閉じ始める。この遷移の各段階が、異なる生物群集を支えている。つまり、雑木林はひとつの森ではなく、異なる年齢の森がモザイク状に並ぶパッチワークであり、このモザイク構造が里山の生物多様性を最大化していた。燃料革命により薪炭需要が消え、多くの雑木林が放置されて高齢化・暗化が進んでいる。林床に光が届かなくなると、カタクリもオオムラサキも姿を消す。雑木林の「手入れ」は単なる伝統の維持ではなく、生態系サービスの回復に直結する行為だ。",
+    soil:"褐色森林土が主体で、落葉の分解により形成された腐植層（A層）が10〜30cmの厚さに発達している。この腐植層には団粒構造が見られ、水はけと保水力の両方に優れる。落ち葉の下を掘ると、白い菌糸が網目のように走っているのが見える。これは菌根菌のネットワークで、「Wood Wide Web」とも呼ばれる地下の情報・栄養交換システムだ。菌根菌は樹木の根と共生し、リン酸や微量元素の吸収を10〜100倍に高める。一方、樹木は光合成で得た糖の20〜30%を菌根菌に分配している。この共生関係がなければ、痩せた山の土壌で大木は育たない。",
+    observe:["樹齢の異なる木が混在しているか（モザイク構造の確認）","林床に光が届いているか（光環境の評価）","落ち葉を3層に分けて分解段階を観察","萌芽更新の切り株を探す（根元から複数の幹が生えている）","キノコ（分解者）の種類・位置・基質の関係"],
+    creatures:["コナラ","クヌギ","カブトムシ","オオムラサキ","キツツキ類"],
+    sn:{spring:"新緑と林床の春植物（カタクリ・スミレ）が見頃。萌芽更新の切り株から新芽が伸びる。",summer:"樹液に集まるカブトムシ・クワガタの観察好機。林冠が閉じて木陰の涼が心地よい。",autumn:"紅葉のグラデーション、ドングリの種類比較、キノコの最盛期。落ち葉の匂いから放線菌を感じる。",winter:"落葉後の明るい林内で野鳥観察。冬芽の形で樹種を同定する。"}},
+  {id:"y",name:"谷戸・湿地",icon:"💧",color:"#0288d1",
+    summary:"丘陵地の谷間に形成される湿潤な低地。水源と生物多様性のホットスポット。",
+    detail:"谷戸（やと）は関東の丘陵地に特有の地形で、浸食によってできた浅い谷に湧水が集まり、湿地帯を形成する。地域によって谷津（やつ）、谷地（やち）とも呼ばれ、日本の原風景の一つだ。谷戸の湧水は地下水脈から供給されるため、年間を通じて水温が安定しており（約15℃前後）、夏は冷たく冬は温かい。この安定した水環境が、多くの水辺の生き物にとって避難所（レフュージア）の役割を果たす。生態学的に最も重要なのは、水辺と陸地の境界にあたるエコトーン（移行帯）だ。このわずか数メートルの幅に、水生生物・湿生植物・陸上生物が重なり合って棲み、種の多様性が突出して高くなる。谷戸はかつてほぼすべてが水田として利用されていたが、耕作放棄によりヨシ原やハンノキ林への遷移が進んでいる。一方で、適度な管理のもとで維持された谷戸田は、水田と湿地のハイブリッドとして極めて高い生物多様性を保持する。",
+    soil:"グライ土と呼ばれる還元状態の灰青色土壌が特徴的。常に水で飽和された状態にあるため、嫌気性微生物が卓越し、鉄イオン（Fe³⁺）が還元されて二価鉄（Fe²⁺）となり、土壌全体が独特の青灰色を呈する。有機物の嫌気的分解は好気的分解より遅いため、未分解の有機物が泥炭として蓄積することもある。特筆すべきは、酸化還元電位（Eh）の勾配が、わずか数十センチの距離で全く異なる微生物群集をつくり出すことだ。表層近くの酸化的な環境と、深層の還元的な環境が隣り合い、その境界で鉄やマンガンの酸化還元反応が活発に起きている。この微小スケールの環境多様性が、谷戸の土壌を「見えない生態系」として極めて豊かなものにしている。",
+    observe:["湧水の位置を特定し水温を測定する（年間を通じて約15℃で安定）","グライ土を掘り出して色と質感、匂いを確認（硫化水素の微かな匂い）","水際のエコトーン幅を測定し、帯状の植生分布を記録","水生昆虫の種類から水質を推定する（カワゲラ→清水、ユスリカ→富栄養）","ヨシ・ガマ・セリなどの群落分布を地図に記録"],
+    creatures:["アマガエル","ホタル","メダカ","トンボ類","サワガニ"],
+    sn:{spring:"カエルの産卵ラッシュ。卵塊の形状で種類を同定できる。セリやクレソンの新芽が水際に。",summer:"ゲンジボタルの乱舞は水環境の健全性の証。トンボの羽化シーンに出会えることも。",autumn:"渡り鳥の中継地として重要。ヨシの穂が銀色に輝き、種子が風に乗る。",winter:"冬鳥（タシギ、クイナなど）の採餌場。氷の結晶が芸術的な模様をつくる。"}},
+  {id:"t",name:"棚田・水田",icon:"🌾",color:"#f9a825",
+    summary:"傾斜地に階段状に造成された水田。水循環と食料生産と生態系が重なる場。",
+    detail:"棚田は、傾斜地に等高線に沿って階段状に造成された水田であり、土木技術と農業知識と水管理の知恵が凝縮された構造物だ。一枚の田が同時に「貯水池」（洪水調節）、「浄水装置」（水質浄化）、「生息地」（生物多様性）の三つの機能を担っている。日本の水田面積は約240万ヘクタールだが、そのすべてが雨水を一時的に貯留するダムとして機能しており、その貯水量は全国のダムの総貯水量に匹敵するとも言われる。水田の水は地下に浸透して地下水を涵養し、周辺の湧水や小川の水量を安定させる。近年、耕作放棄による棚田の減少が各地で深刻化しているが、その損失は米の生産量だけでなく、洪水調節機能、地下水涵養、生物多様性保全、景観維持など多面的な生態系サービスの喪失を意味する。棚田の保全は、農業政策であると同時に、防災・水資源・生物多様性のすべてに関わる国土管理の問題だ。",
+    soil:"水田土壌は地球上で最も独特な酸化還元環境の一つをもつ。湛水期には土壌中の酸素が消費されて還元状態（嫌気的）になり、鉄が溶出して灰色に変色する。落水後は空気が入り込んで酸化状態に戻り、マンガンが酸化沈着して褐色の斑点をつくる。この年に一度の大規模な酸化還元サイクルが、他の土壌には見られない独自の微生物群集を育んでいる。水田土壌は上から「作土層」（耕される層、15〜20cm）、「鋤床層」（耕盤、硬く締まって水を通しにくい）、「心土層」（その下の自然土壌）の三層構造をなし、この構造が水管理の基盤となっている。鋤床層がなければ田に水を張ることができず、逆に鋤床層が厚すぎると根の伸長と地下水涵養が妨げられる。",
+    observe:["畦の高さ・形状・材質から水管理技術の工夫を読み取る","水口（取水口）と水尻（排水口）の構造を観察し、水の流れを追う","季節による水田内の生き物相の劇的な変化を記録する","田面水の温度を数カ所で測定し、温度勾配を確認する","代掻き後の土壌粒子の沈降速度を観察する（団粒構造の指標）"],
+    creatures:["イナゴ","ドジョウ","タニシ","赤トンボ","サギ類"],
+    sn:{spring:"代掻き・田植えの時期。水が入ると一斉にカエルの大合唱が始まる。水面に映る空と山。",summer:"稲の成長と同期して水生昆虫が最盛期を迎える。田面の上をトンボが群飛する。",autumn:"稲刈りとはざ掛けの風景。落水後の田に渡り鳥のシギ・チドリ類が飛来する。",winter:"冬水田んぼ（冬期湛水）を実施している田があれば、水鳥の楽園に。レンゲの種まきも。"}},
+  {id:"o",name:"小川・水路",icon:"🏞️",color:"#00897b",
+    summary:"里山を流れる細流と人工水路。水の道が里山の生態系をひとつにつなぐ。",
+    detail:"里山の小川は、雑木林からの湧水を集め、谷戸を通過し、水田に水を引き入れ、集落を経て再び大きな川に戻る。この水の旅路が、里山の各環境を生態学的にひとつにつなぐ「回廊」の役割を果たしている。自然の流路と人工の水路（用水路・排水路）が一体となった水系は、里山の「循環系」であり「血管」のような存在だ。護岸されていない土水路では、水際にミゾソバやセリが繁茂し、水中にはカワニナやサワガニが棲み、それらを餌にカワセミやサギ類がやってくる。水路の構造（蛇行の有無、瀬と淵の連続、底質の粒度分布）は、そこに棲める生き物を決定づける最も重要な環境因子だ。近年、コンクリート三面張りの水路が魚類や両生類の移動を遮断し、里山の生態系を分断する問題が各地で認識されるようになった。一部の地域では、生き物の移動路を確保するための「魚道」の設置や、土水路への回帰が試みられている。",
+    soil:"小川沿いには砂質土壌や沖積土が堆積し、洪水のたびに地形と土壌が更新される。この「攪乱による更新」が河畔林の若返りと種の多様性維持に寄与している。水路の底質は、砂・礫・泥の比率によって分類でき、これが水生生物の生息を直接左右する。たとえば、礫底にはカワゲラやヘビトンボの幼虫が、砂泥底にはヤゴやユスリカが、泥底にはドジョウやタニシが棲み分ける。底質のモザイクが生物の多様性を支えているのだ。",
+    observe:["流速の変化と底質（砂・礫・泥の比率）の対応関係を記録","瀬（浅くて流れが速い）と淵（深くて流れが緩い）の交互パターンを確認","水際植物の帯状分布を横断面でスケッチする","水温を上流と下流で測定し、湧水の流入や日照の影響を確認","人工水路（コンクリート）と自然流路（土水路）の生き物の違いを比較"],
+    creatures:["カワセミ","サワガニ","イモリ","カワニナ","クレソン"],
+    sn:{spring:"雪解け水による増水。両生類（カエル・イモリ）が水路を移動して繁殖地へ向かう。",summer:"水遊びの季節。水生昆虫（カワゲラ・トビケラ・ヤゴ）の観察適期。",autumn:"水量減少で底質が露出。落葉が溜まる場所に水生昆虫が集中する。",winter:"霜柱と氷の造形美。水鳥（カルガモ・コガモ）が飛来する。"}},
+  {id:"k",name:"草地・原っぱ",icon:"🌻",color:"#7cb342",
+    summary:"定期的な草刈りで維持される半自然草原。草花と昆虫の楽園であり、草堆肥の供給源。",
+    detail:"里山の草地は、放っておけば数年で藪になり、やがて森林へと遷移してしまう。人が定期的に草を刈ることで初めて維持される「半自然草原」であり、その意味で里山の中でも最も「人の手」を必要とする環境だ。しかしこの環境には、森林にも農地にもない固有の生態系が存在する。日本の秋の七草（ハギ、ススキ、クズ、ナデシコ、オミナエシ、フジバカマ、キキョウ）はすべて草原の植物であり、かつての日本人の暮らしがいかに草地と密接だったかを物語っている。草地は昆虫にとっても重要で、バッタ・キリギリス・チョウ類の多くが草原性の種だ。草丈の違いが微小な環境勾配をつくり、10cmの草地と30cmの草地では棲む虫がまったく異なる。さらに、刈り取った草は堆肥の原料（草堆肥）として農業に還元されてきた。ススキやチガヤなどのイネ科草本は、C/N比が高く分解が遅いため、長期間かけてゆっくりと土壌に炭素を供給する。この草堆肥のサイクルが、里山における「一次発酵→二次発酵」の橋渡しを担っている。",
+    soil:"草地の土壌は、草の根が密に張り巡らされた「根圏」が発達し、驚くほど高い炭素貯留能力をもつ。草の根は毎年一部が枯死し、それが微生物に分解されることで、深い腐植層が形成される。永年草地の土壌炭素量は、同面積の森林に匹敵することもある。また、イネ科草本の根は土壌中に細かい隙間をつくり、団粒構造の発達を促進する。草堆肥の原料となる刈り草は、この土壌から養分を吸い上げて育ったものであり、堆肥化して農地に戻すことは、「草地→農地→草地」の養分循環そのものだ。",
+    observe:["草丈の違い（5cm/15cm/30cm/50cm）で昆虫相がどう変わるか比較","春→夏→秋の草花の開花リレーを記録する（何月にどの花が咲くか）","草刈り後の再生スピードを測定する（1週間でどこまで伸びるか）","バッタ・チョウの種類と個体数密度を計測","草を1株抜いて根の深さと広がりを観察する"],
+    creatures:["バッタ類","チョウ類","ススキ","ワレモコウ","ノウサギ"],
+    sn:{spring:"スミレ・タンポポ・レンゲの花畑。越冬から目覚めたチョウが舞い始める。",summer:"虫の大合唱が始まる。草刈りの時期であり、刈り草は堆肥の原料になる。",autumn:"ススキの穂が銀色に輝き、秋の七草が揃う。バッタ・キリギリスの鳴き声。",winter:"枯れ野の静寂。ノスリやチョウゲンボウなど猛禽類の狩り場になる。"}},
+  {id:"r",name:"林縁・生け垣",icon:"🌿",color:"#689f38",
+    summary:"森と開けた場所の境界。「エッジ効果」により生物が集中する生態系の要所。",
+    detail:"林縁は森林と草地・農地の接点であり、生態学でいう「エッジ効果」が最もよく現れる場所だ。森林の鳥と草地の鳥が同時に観察でき、日向を好む植物と日陰を好む植物が数メートルの幅に共存する。この環境移行帯（エコトーン）には、両側の環境を利用する「ジェネラリスト」種が集中し、種の多様性が突出して高くなる。生け垣は、人が意図的につくった「人工の林縁」だ。ツバキ、サザンカ、茶の木、カシ類などが使われ、防風・境界・景観の機能を果たすとともに、生態系の「回廊（コリドー）」として森と森をつなぎ、種の移動を支えてきた。農村の屋敷林（屋敷を取り囲むケヤキやシイの大木）も広義の林縁であり、フクロウの営巣木やカブトムシの発生源として重要な役割を果たす。都市化や圃場整備で生け垣と屋敷林が失われることは、里山の生態系ネットワークの「断線」を意味する。",
+    soil:"林縁の土壌は、森林側の腐植に富む褐色森林土と、開放地側の乾燥した土壌の移行帯に位置する。日照条件と水分条件の急激な勾配に沿って、わずか2〜3メートルの距離で土壌微生物群集が大きく入れ替わる。この微小スケールの環境変化が、地上の植生にも反映され、林縁には他の環境には見られないユニークな植物群落が成立する。つる植物（クズ、フジ、アケビなど）は林縁に最も多く、光を求めて樹冠を覆い、林縁のダイナミックな景観をつくる。",
+    observe:["林縁から森林内部へ5m間隔で光量を測定し、光環境の勾配を記録","生け垣に使われている樹種を同定し、その選択理由を考察する","林縁に集まる鳥の種類と行動パターン（採餌・移動・さえずり）を観察","つる植物の分布と巻きつき方（左巻き・右巻き）のパターンを確認","エッジ効果を昆虫の種数で定量的に確認する（林内・林縁・草地で捕虫網調査）"],
+    creatures:["モズ","ジョウビタキ","カマキリ","クモ類","ツバキ"],
+    sn:{spring:"林縁は森林内部より気温が高く、新芽の展開と開花が最も早く始まる場所。",summer:"日陰と日向が隣り合い、微気象差が明瞭。温度計を使うと数メートルで2〜3℃違う。",autumn:"木の実（ドングリ、柿、アケビ）が豊富で、鳥やリスの採餌行動が活発。",winter:"落葉樹が葉を落とす中、ツバキやサザンカなど常緑樹の花が際立つ。"}},
+];
+
+/* ═══════════ DATA: 生態系図鑑 ═══════════ */
+
+const ECO = [
+  {cat:"樹木",icon:"🌳",items:[
+    {name:"コナラ",env:"雑木林",note:"里山を代表する落葉高木で、かつての薪炭林の主役。秋に実るドングリは、リス・ネズミ・イノシシなど多くの動物の冬の食料源となる。幹は薪や炭の原料、シイタケの原木としても利用される。伐採後の切り株から複数の幹を再生させる「萌芽更新」が可能で、この特性が里山の持続的利用を支えてきた。"},
+    {name:"クヌギ",env:"雑木林",note:"コナラと並ぶ里山の代表樹。夏に幹から滲み出る樹液は、カブトムシ・クワガタ・オオムラサキなど多くの昆虫を集める「森のレストラン」。丸いドングリは翌年秋に熟す（二年成り）。伐採した丸太はシイタケ栽培の最高級原木として取引され、林業と農業をつなぐ結節点となっている。"},
+    {name:"エノキ",env:"林縁",note:"国蝶オオムラサキの唯一の食樹であり、この木がなければオオムラサキは存在できない。江戸時代には一里塚（約4kmごとの道標）に植えられ、旅人に木陰を提供した歴史をもつ。秋に実る小さな橙色の実は鳥に好まれ、種子散布を担う。"},
+    {name:"ヤマザクラ",env:"雑木林",note:"日本の野生桜の代表種。ソメイヨシノと異なり、花と葉が同時に展開するため、花の白と若葉の赤銅色のコントラストが美しい。個体ごとに開花時期がずれるため、山全体が一斉に咲くのではなく、数週間かけて順番に色づいていく。吉野山の千本桜はヤマザクラ。"},
+    {name:"アカマツ",env:"草地",note:"痩せた土壌でも生育できる先駆種（パイオニア）で、かつて里山の尾根筋や草地に多く見られた。根に共生する菌根菌のうち、マツタケはアカマツとの共生でのみ子実体（キノコ）を形成する。里山の手入れが行き届いていた時代はマツタケが豊富に採れたが、松くい虫の被害と管理放棄により激減した。"},
+    {name:"ハンノキ",env:"谷戸",note:"谷戸の湿地に自生する落葉樹。根にフランキア属の放線菌が共生し、空中の窒素ガスを植物が利用できるアンモニアに変換（窒素固定）する。マメ科以外で窒素固定を行う数少ない樹木であり、痩せた湿地の土壌を自ら肥沃化する能力をもつ。ミドリシジミ（チョウ）の食樹でもある。"},
+    {name:"ケヤキ",env:"林縁",note:"樹高30mを超える大木になる落葉樹。屋敷林の主木として集落の防風林に植えられ、関東平野のどこからでも屋敷林のケヤキの大木が目に入った。材は硬く美しい木目をもち、建築材として最高級とされる。新国立競技場にも使われた。"},
+    {name:"スギ",env:"谷戸",note:"日本固有の常緑針葉樹で、谷筋の湿った場所を好む。戦後の拡大造林で日本の森林の約18%がスギ植林地となった。天然のスギは屋久杉のように数千年の寿命をもつが、植林地のスギは適切な間伐と管理がなければ、ひょろひょろと伸びて根が浅くなり、土砂災害の一因となる。"},
+  ]},
+  {cat:"野鳥",icon:"🐦",items:[
+    {name:"ウグイス",env:"雑木林",note:"藪の中を好む里山の代表的な鳥。春の初鳴き「ホーホケキョ」は「谷渡り」とも呼ばれる。このさえずりは縄張り宣言であり、実は藪から姿を見せることは極めてまれ。鳴き声は聞こえるのに姿が見えない、という体験こそがウグイスの「らしさ」だ。"},
+    {name:"エナガ",env:"雑木林",note:"体重わずか8gの小さな鳥で、冬にはシジュウカラ・メジロなどと混群を形成して雑木林を移動する。巣は苔・蜘蛛の糸・地衣類で精巧に作られた袋状の傑作で、内部に羽毛を1000枚以上敷き詰める。「森のぬいぐるみ」と呼ばれる愛らしい姿。"},
+    {name:"シジュウカラ",env:"林縁",note:"「ツツピー、ツツピー」の明瞭なさえずりでおなじみ。2016年に京都大学の研究で「文法をもつ」ことが世界で初めて証明された。「ピーツピ（警戒）」と「ヂヂヂ（集合）」を組み合わせて「警戒しながら集合せよ」という複合メッセージを伝達できる。"},
+    {name:"カワセミ",env:"小川",note:"「渓流の宝石」と称される美しい鳥。背中のコバルトブルーは色素ではなく、羽毛の微細構造による構造色（光の干渉）で発色している。水中にダイビングして魚を捕る姿は圧巻。カワセミが棲んでいることは、小魚が豊富で水質が良好であることの証であり、里山の水環境の健全性を示す指標種。"},
+    {name:"サシバ",env:"棚田",note:"里山の猛禽類で、「里山のタカ」とも呼ばれる。谷戸と水田と雑木林がモザイク状に配置された里山景観に依存し、水田のカエルやヘビ、雑木林のネズミを主食とする。秋には数千〜数万羽の群れで渡りを行い、白樺峠や伊良湖岬の「タカの渡り」は壮観。サシバの渡来数は里山の健全度のバロメーター。"},
+    {name:"フクロウ",env:"雑木林",note:"里山の食物連鎖の頂点に位置する猛禽。直径30cm以上の大木の樹洞に営巣するため、大径木のある成熟した雑木林が不可欠。夜行性で、闘牛やネズミを捕食する。左右の耳の位置が非対称で、音源の方向を三次元的に特定できる驚異的な聴覚をもつ。"},
+    {name:"セキレイ",env:"小川",note:"水辺を歩きながら虫を捕食する姿が特徴的。長い尾を上下にリズミカルに振る独特の動作から「石叩き」とも呼ばれる。ハクセキレイ・セグロセキレイ・キセキレイの3種が日本に生息し、棲み分けている。"},
+    {name:"メジロ",env:"林縁",note:"目の周りの白いアイリングが名前の由来。椿や梅の花蜜を好み、花粉を運ぶポリネーター（送粉者）としても機能する。冬には群れで木の枝に一列に並んで体を寄せ合い暖を取る姿が見られ、「目白押し」という慣用句の語源となった。"},
+  ]},
+  {cat:"昆虫",icon:"🦋",items:[
+    {name:"オオムラサキ",env:"雑木林",note:"日本の国蝶に指定された大型のタテハチョウ。幼虫はエノキの葉を食べて育ち、成虫はクヌギの樹液を好む。つまり、エノキとクヌギの両方が揃った雑木林でなければ生きられない。オスの翅の表面は構造色による鮮やかな紫色で、角度によって色が変化する。"},
+    {name:"カブトムシ",env:"雑木林",note:"子どもたちのヒーローにして、里山の土壌生態系の重要プレイヤー。幼虫は腐葉土や堆肥の中で約2年かけて成長し、大量の有機物を粉砕・分解する。つまりカブトムシの幼虫は堆肥の「分解者」なのだ。成虫はクヌギの樹液に集まり、メスは堆肥場や腐葉土の山に産卵する。"},
+    {name:"ゲンジボタル",env:"小川",note:"幼虫は清流に棲み、カワニナ（巻貝）だけを食べて育つ水質指標種。成虫の発光は求愛シグナルで、オスは飛びながら、メスは草の上で光る。地域によって発光パターン（点滅周期）が異なり、関東型は約4秒、関西型は約2秒。農薬と水路のコンクリート化で激減した。"},
+    {name:"ギフチョウ",env:"雑木林",note:"「春の女神」と呼ばれる美しいアゲハチョウの仲間。年に一度、早春にだけ現れ、カンアオイ（地面に這うように咲く地味な植物）に産卵する。里山の落葉樹林と林床のカンアオイの両方が必要で、雑木林の管理放棄により全国的に減少。各地で天然記念物に指定されている。"},
+    {name:"オニヤンマ",env:"小川",note:"日本最大のトンボで、体長10cmに達する。複眼は約3万個の個眼からなり、ほぼ360度の視野を持つ。幼虫（ヤゴ）は小川の砂泥底に3〜5年間棲み、オタマジャクシや他の水生昆虫を捕食する。成虫は里道をパトロール飛行し、スズメバチすら捕食する空中の捕食者。"},
+    {name:"ミツバチ",env:"草地",note:"ニホンミツバチは日本在来のミツバチで、里山の多様な花資源に適応している。1つの巣に1〜3万匹が社会生活を営み、冬は蜂球（はちだま）を形成して筋肉の震えで発熱し、巣内を35℃前後に保つ。作物の受粉サービスとしても不可欠で、その経済的価値は農産物の生産額の数十%に相当するとも試算される。"},
+    {name:"オオクワガタ",env:"雑木林",note:"日本最大のクワガタムシ。幼虫は立ち枯れや倒木の朽木の中で白色腐朽菌が分解した木部を食べて2〜3年かけて成長する。成虫は大径木の樹洞に潜み、夜間にのみ活動する。里山の大木と朽木が失われることで急速に減少し、野生個体は極めて希少になった。"},
+    {name:"ハンミョウ",env:"草地",note:"「道教え（みちおしえ）」の美しい別名をもつ。里道の地面で獲物を待ち伏せし、人が近づくと少し先に飛んで降り立つ動作を繰り返す。金属光沢の体色は赤・緑・青の構造色で、「日本一美しい甲虫」とも。幼虫は地面に縦穴を掘り、穴の入口で通りかかる虫を捕まえる。"},
+  ]},
+  {cat:"水辺",icon:"🐟",items:[
+    {name:"メダカ",env:"棚田",note:"かつて日本で最もありふれた魚だったが、農薬使用・水路のコンクリート化・外来種の侵入により激減し、環境省のレッドリストに掲載されている。水田と水路を行き来して繁殖する生活史をもち、水田の落水時に水路に退避し、翌春に再び水田に入る。この移動が遮断されることが最大の脅威。"},
+    {name:"ドジョウ",env:"棚田",note:"田んぼの泥の中に潜って暮らし、有機物の細片やプランクトンを吸い込んで食べる「底泥の掃除屋」。腸でも呼吸できる特殊な能力をもち、溶存酸素が低い泥水中でも生存可能。冬は泥に深く潜って越冬する。かつては農村のたんぱく源として柳川鍋やどじょう汁で食された。"},
+    {name:"サワガニ",env:"小川",note:"日本固有の淡水ガニで、一生を淡水で過ごす（海に下らない）珍しいカニ。清流の指標生物であり、サワガニがいる川は水質が良い証拠。雌は腹部に卵を抱えて保護し、孵化した稚ガニはそのまま親と同じ形で生まれる（プランクトン期がない直接発生）。"},
+    {name:"アカハライモリ",env:"谷戸",note:"腹面の赤い斑紋が鮮やかな両生類。この赤は「テトロドトキシン」（フグ毒と同じ）を含む皮膚の警告色で、捕食者に対する防御手段。再生能力が驚異的で、手足はもちろん、心臓や眼球の水晶体すら再生できる。"},
+    {name:"タガメ",env:"棚田",note:"日本最大の水生昆虫で、体長6cmに達する。鎌状の前脚でメダカやカエルを捕え、消化液を注入して体液を吸う。かつては水田の普通種だったが、農薬と夜間の光（光に集まる性質がある）により壊滅的に減少。環境省の絶滅危惧種に指定されている。"},
+    {name:"モリアオガエル",env:"谷戸",note:"水面上に張り出した木の枝に白い泡巣をつくるという、カエルとしては極めて珍しい繁殖様式をもつ。泡巣の中で孵化したオタマジャクシは、下の水面に落下して水中生活を始める。森林と水辺の両方が揃った環境でなければ繁殖できないため、里山の環境指標種とされる。"},
+  ]},
+  {cat:"菌類・土壌",icon:"🍄",items:[
+    {name:"シイタケ",env:"雑木林",note:"クヌギやコナラの原木に菌を打ち込んで栽培する「原木栽培」は、里山の林業と農業をつなぐ伝統的な複合生産だ。シイタケは木材腐朽菌であり、リグニン（木を硬くしている成分）を分解する「白色腐朽」を行う。これは自然界でリグニンを分解できる数少ない生物の一つ。"},
+    {name:"マツタケ",env:"雑木林",note:"アカマツの細根に共生する菌根菌で、この共生関係のもとでのみ子実体（キノコ）を形成する。里山の手入れが行き届き、林床が明るく落ち葉が少ない環境を好む。里山管理の衰退、松くい虫の被害、酸性雨の影響が重なり、国内生産量は最盛期の1%未満にまで激減した。"},
+    {name:"菌根菌",env:"雑木林",note:"樹木の根に共生し、地下に広大な菌糸ネットワーク（「Wood Wide Web」）を張り巡らせる菌類の総称。菌糸は土壌粒子の隙間に入り込み、樹木の根だけでは到達できないリンや微量元素を吸収して宿主に提供する。見返りに、樹木は光合成産物の20〜30%を菌根菌に分配する。異なる種の木同士が菌糸ネットワークを介して栄養素を交換している事例も報告されている。"},
+    {name:"ミミズ",env:"草地",note:"「土壌の耕耘者」として知られるが、その生態系への貢献度は計り知れない。有機物を食べて排出するフン（キャスト）は、元の土壌よりもカルシウム5倍、窒素7倍、リン11倍、カリウム5倍も多い「スーパー肥料」だ。ダーウィンは晩年にミミズの研究に没頭し、「地球上の歴史において、ミミズほど重要な役割を果たした動物はほかにない」と書いた。"},
+    {name:"トビムシ",env:"雑木林",note:"体長0.5〜2mmの微小な土壌動物で、1平方メートルの森林土壌に数万〜数十万匹が生息する。落ち葉を細かく噛み砕いて表面積を増やし、菌類や細菌が分解しやすい状態にする「最初の分解者」。跳躍器（フルカ）をもち、危険を感じると数センチ跳び上がる。肉眼ではほぼ見えないが、里山の物質循環において不可欠な存在。"},
+    {name:"放線菌",env:"草地",note:"「土の良い香り」の正体であるゲオスミン（geosmin）を産生する細菌群。雨上がりの土の匂いは放線菌の匂いだ。抗生物質ストレプトマイシンをはじめ、現在使われている抗生物質の約70%は放線菌由来。土壌の病原菌を抑制し、植物の健全な生育を支える「見えない守護者」。"},
+  ]},
+  {cat:"草花",icon:"🌸",items:[
+    {name:"カタクリ",env:"雑木林",note:"「スプリング・エフェメラル（春の儚い命）」の代表種。早春の雑木林の林床に花を咲かせ、わずか2〜3週間で地上部を枯らして地下の鱗茎に栄養を蓄え、翌春まで休眠する。この戦略は、落葉樹が葉を開く前の短い「光の窓」を利用するもの。種子が発芽してから開花するまで7〜8年かかる。"},
+    {name:"ヒガンバナ",env:"棚田",note:"秋の彼岸の頃に真紅の花を咲かせる。田畑の畦に植えられたのは、有毒なアルカロイド（リコリン）を含むためモグラやネズミが畦に穴を開けるのを防ぐ目的だったとされる。一方で、毒を水で洗い流せばデンプンが食べられるため、飢饉時の「最後の非常食」（救荒植物）でもあった。花と葉が同時に存在しない（花が咲く時は葉がなく、葉がある時は花がない）ため「葉見ず花見ず」とも呼ばれる。"},
+    {name:"ススキ",env:"草地",note:"日本の秋を象徴するイネ科の多年草。茅葺き屋根の材料（茅＝ススキ）として、また草堆肥の主要原料として、里山の暮らしに不可欠だった。C/N比が高く分解が遅いため、堆肥化すると長期間にわたって土壌に炭素と養分を供給し続ける。地下茎で旺盛に広がり、1年で2mを超える草丈になるため、定期的な刈り取りがなければ他の草花を被圧してしまう。"},
+    {name:"レンゲソウ",env:"棚田",note:"マメ科の緑肥作物で、根に共生する根粒菌が大気中の窒素ガスを植物が利用できるアンモニアに変換（窒素固定）する。秋に田に種を播き、春に一面のピンクの花畑となった後、花ごと田にすき込む。このサイクルで水田に窒素肥料を供給でき、化学肥料がなかった時代の農業を支えた。"},
+    {name:"ワラビ",env:"草地",note:"春の山菜の代表格。草刈りで管理された草地や、雑木林の伐採跡地に群生する。アク（チアミナーゼ等の有毒成分）が強いため、灰や重曹でアク抜きしてから食べる。ワラビの根から取れるデンプンは「わらび餅」の原料。1kgのワラビ粉をとるのにワラビの根が約50kg必要とされる。"},
+    {name:"フキノトウ",env:"谷戸",note:"早春、雪解け直後の湿地で最も早く顔を出す「春の使者」。フキの花芽であり、独特の苦味は肝臓の解毒機能を活性化するとされる。天ぷらやフキ味噌にして食される。花が終わると地下茎から大きな葉（フキ）が展開し、初夏には50cm以上の葉柄が伸びる。"},
+  ]},
+];
+
+/* ═══════════ DATA: 暮らし ═══════════ */
+
+const LIVING = [
+  {id:"ag",title:"里山の農業",icon:"🌾",color:"#e65100",items:[
+    {name:"水稲栽培",desc:"棚田での米づくりは里山農業の中核であり、一年を通じた作業の連なりが水田生態系を維持してきた。春の水路掃除と畦塗りに始まり、代掻き（田を水で満たして土を練る）、田植え、水管理（中干し・間断灌漑）、草取り、稲刈り、はざ掛け（天日干し）、脱穀と続く。この一連の作業は、水田を「田んぼ」という生態系として機能させるために不可欠であり、農作業のひとつひとつが水辺の生き物の生活史と連動している。たとえば、代掻きの時期にカエルが産卵し、中干しの時期に水生昆虫が羽化し、稲刈り後の落穂に渡り鳥が飛来する。",season:"通年"},
+    {name:"草堆肥・草農法",desc:"刈り草を積み上げ、水分と温度を管理しながら微生物の力で発酵させた「草堆肥」は、里山の循環農業の要である。ススキ・チガヤなどのイネ科草本を主原料とし、C/N比（炭素/窒素比）が高いため分解が遅く、土壌に長期間にわたって有機物を供給し続ける。化学肥料に頼らず、里山の内部にある草資源だけで土壌を肥沃にする伝統技術であり、近年は有機農業・再生農業の文脈で再評価が進んでいる。草堆肥は土壌の団粒構造を発達させ、保水力と排水性を同時に高める効果がある。",season:"夏〜秋"},
+    {name:"緑肥と裏作",desc:"冬の水田にレンゲソウやクリムソンクローバーを播き、春に花ごとすき込むことで、マメ科植物の根粒菌による窒素固定の恩恵を受ける自然の肥料法。10アールあたり約5〜8kgの窒素が固定されるとされ、これは化学肥料に換算するとかなりの量にあたる。裏作として麦類を栽培する二毛作も里山農業の特徴で、冬の田に生命の連続性を保つ。裏作の麦の根は土壌の通気性を改善し、翌年の稲作にプラスの影響を及ぼす。",season:"冬〜春"},
+    {name:"原木キノコ栽培",desc:"雑木林で伐採したクヌギやコナラの丸太（原木・ほだ木）にシイタケの種駒を打ち込み、1〜2年かけて菌糸を蔓延させ、秋と春に子実体（キノコ）を収穫する。林業（雑木林の萌芽更新管理）と農業（食料生産）を直接つなぐ、里山ならではの複合生産システム。原木シイタケは菌床栽培に比べて成長が遅い分、香りと食感に優れ、栄養価も高い。伐採→原木栽培→残材の堆肥化→土壌還元という完全な循環を形成する。",season:"秋〜春"},
+    {name:"養蜂",desc:"ニホンミツバチは日本在来の野生ミツバチで、里山の多様な花資源に適応して進化してきた。セイヨウミツバチに比べて蜜量は少ないが、天敵のオオスズメバチに対して「熱殺蜂球」（体を寄せ合って発熱し蒸し殺す）という独自の防衛戦略をもつ。蜂蜜の採取だけでなく、果樹や野菜の受粉サービスとしても農業に不可欠。里山の花暦と蜜源植物の連続性がニホンミツバチの群れの存続を支えている。",season:"春〜秋"},
+  ]},
+  {id:"fo",title:"山の仕事",icon:"🪓",color:"#5d4037",items:[
+    {name:"薪炭生産",desc:"雑木林の15〜20年周期の伐採と萌芽更新は、里山の景観と生態系を形づくる根幹のサイクルだった。伐採された木は薪（まき）や炭の原料となり、家庭の煮炊き・暖房・風呂焚きに使われた。このサイクルが止まった燃料革命（1960年代）以降、雑木林は「放置林」化し、高齢化・暗化・生物多様性の低下が進んでいる。近年は木質バイオマスエネルギーとしての再評価が進み、薪ボイラーや薪ストーブの導入が各地で始まっている。",season:"冬"},
+    {name:"炭焼き",desc:"炭窯（すみがま）で木材を蒸し焼き（炭化）にする技術。備長炭（ウバメガシ）、黒炭（コナラ・クヌギ）、竹炭など、原料と焼き方で多様な炭がつくり分けられる。燃料としてだけでなく、炭は微細な孔（ミクロポア）が水分や微生物を保持するため、土壌改良材（バイオチャー）として世界的に注目されている。アマゾンの「テラ・プレタ」（黒い土）は、先住民が炭を混ぜ込んで肥沃化した土壌であり、数百年経っても生産性を保っている。",season:"冬"},
+    {name:"落ち葉掻き",desc:"晩秋から冬にかけて、雑木林の落ち葉を竹箒や熊手で集める作業。集めた落ち葉は堆肥小屋に積み上げ、米ぬかや鶏糞を挟みながら水をかけ、微生物の力で1〜2年かけて腐葉土にする。この腐葉土は畑の土づくりに不可欠な有機資材となる。また、落ち葉を集めて踏み込んだ「踏み込み温床」は、発酵熱で苗代の温度を保つ伝統的な育苗技術。落ち葉掻きは林床を明るくし、カタクリなどの春植物の生育を助ける効果もある。",season:"秋〜冬"},
+    {name:"竹林管理",desc:"竹は成長速度が極めて速く（マダケは1日に1m以上伸びることもある）、放置すると急速に周囲の雑木林や農地に侵入・拡大する。適切な間伐（1平方メートルあたり4〜5本を目安に）によって光を入れ、タケノコの品質を高める。収穫したタケノコは食材に、成竹は竹かご・竹炭・竹チップ（マルチ材）・建材に利用する。近年は竹パウダーを堆肥に混ぜる「竹堆肥」も注目されている。竹林管理の放棄は全国的な課題で、「竹害」として認識されつつある。",season:"春・冬"},
+  ]},
+  {id:"cu",title:"里山の文化",icon:"🏮",color:"#7b1fa2",items:[
+    {name:"茅葺き屋根",desc:"ススキ（茅）やヨシを束ねて葺いた伝統的な屋根。30〜40年周期で葺き替えが必要であり、一軒の葺き替えには数十人の共同作業（結・ゆい）が不可欠だった。つまり茅葺き屋根の維持は、草地の管理（ススキ原の維持）と地域の社会関係（共同作業の仕組み）の両方を前提としている。茅葺き屋根が減ることは、ススキ原の管理放棄と地域コミュニティの弱体化を同時に意味する。白川郷の合掌造りは茅葺き文化の世界遺産として知られる。",season:"秋"},
+    {name:"発酵食文化",desc:"味噌・醤油・酢・みりん・日本酒・焼酎・漬物・納豆・鰹節 — 日本の食卓は発酵食品で溢れている。これらはすべて里山で生産された米・大豆・麦・野菜を原料とし、麹菌（Aspergillus oryzae）・乳酸菌・酵母・納豆菌などの微生物の力で変換されたものだ。地域ごとに気候・水質・蔵の微生物叢が異なるため、「うちの味噌」「この土地の醤油」という固有の味が生まれる。風土が微生物を選び、微生物が味をつくる。発酵食品は里山の二次発酵サイクルの結晶であり、土壌微生物が育てた作物を、別の微生物がさらに変換するという二段階の微生物リレーだ。",season:"冬"},
+    {name:"年中行事と祭り",desc:"里山の祭りは農事暦と深く結びついている。春の「田の神迎え」（山の神が田に降りてくる）、初夏の「虫送り」（松明を持って田を巡回し害虫を追い払う）、秋の「収穫祭・新嘗祭」（その年最初の収穫物を神に捧げる）、冬至の「火祭り」（太陽の復活を祈る）— これらはいずれも自然現象と農作業のリズムに対応した、感謝と祈りの装置だ。祭りは同時に、地域の結束を確認し世代間の知恵を伝承する場でもある。",season:"通年"},
+    {name:"里山の手仕事",desc:"竹かご（竹を細く割いて編む）、わら細工（注連縄・草鞋・俵）、草木染め（藍・茜・クチナシ）、和紙漉き（楮・三椏・雁皮）— 里山の素材から生まれるこれらの手仕事は、実用品でありながら美しい「用の美」の文化だ。それぞれの技術は素材の特性に対する深い理解に基づいており、竹の繊維の方向、稲藁の撚り方、染料植物の採取時期など、自然観察と経験知の結晶である。",season:"冬"},
+    {name:"薬草と民間療法",desc:"ドクダミ（十薬）は解毒・利尿、ゲンノショウコ（現之証拠）は下痢止め、ヨモギは止血・灸に、センブリ（千振）は胃薬として使われてきた。「おばあちゃんの知恵」と片づけられがちだが、実はこれらの多くに薬理学的な裏付けがある。ドクダミのデカノイルアセトアルデヒドには抗菌作用が、ゲンノショウコのタンニンには収斂作用が確認されている。里山には200種を超える薬用植物が自生するとも言われる。",season:"春〜夏"},
+    {name:"里山ことば",desc:"「谷戸（やと）」「萌芽更新（ほうがこうしん）」「結（ゆい）」「はざ掛け」「落ち葉掻き」「鋤床層（すきどこそう）」「エコトーン」— 里山には独自の語彙体系がある。言葉を知ることは、その言葉が名付けた風景・技術・関係性を認識することに等しい。「谷戸」という言葉を知らなければ、丘陵地の浅い谷は「ただの窪地」にしか見えない。言葉が風景を切り分け、意味を与える。",season:"—"},
+  ]},
+];
+
+/* ═══════════ DATA: 醸す谷 ═══════════ */
+
+const FERM = [
+  {id:1,layer:"一次発酵",title:"土と大地のインフラ",icon:"🌍",color:"#5d4037",bg:"#efebe9",
+    principle:"すべての循環は、土壌微生物の分解と合成から始まる。",
+    content:"里山の地面の下では、落ち葉や枯れ枝が菌類・細菌・土壌動物の精緻な連携で分解され、腐植となり、団粒構造をもった豊かな土壌がつくられている。この「土中環境」の健全さが、水の浸透、根の伸長、養分の循環 — つまり大地のインフラすべてを支えている。1gの森林土壌には10億個以上の細菌と数kmの菌糸が含まれ、その多様性は地上の生態系に匹敵する。有機土木（やわらかい土木）の思想は、コンクリートで固めるのではなく、この土中の微生物生態系を活かして大地の強靱性をつくり出そうとする。水を力ずくで排除するのではなくゆっくり浸透させ、地中の水脈と空気脈をつなぎ直すとき、土地は自ら安定しようとする。一次発酵とは、この目に見えない土中の営みそのものだ。",
+    links:["菌根菌ネットワーク（Wood Wide Web）","団粒構造と水循環","岩石風化→苔→土壌生成の一次遷移","有機土木（矢野智徳・高田宏臣の実践）","土壌呼吸と炭素循環"],
+    field:"落ち葉を3層に分けて観察しよう。表面の新しい葉、半分解の葉、土と見分けがつかないほど分解された層 — この3段階が「一次発酵」のプロセスそのものだ。最下層を指で崩すと、白い菌糸が糸のように走っているのが見える。甘い土の香りがしたら、それは放線菌の証拠。",
+    quiz:{q:"土壌の「団粒構造」をつくるのに最も重要なのは？",opts:["菌糸と根の分泌物","雨水の浸食","人間の耕耘"],a:0}},
+  {id:2,layer:"二次発酵",title:"食と農の循環",icon:"🌾",color:"#e65100",bg:"#fff3e0",
+    principle:"豊かな土壌が作物を育て、作物の残渣が土に還る。発酵食品はこの循環の知恵の結晶。",
+    content:"里山農業は、外部から大量の資材を投入するのではなく、里山内部の資源循環で成り立ってきた。草堆肥、落ち葉堆肥、緑肥、灰 — すべて「一次発酵」の産物を「二次発酵」の場である農地に還す仕組みだ。そして収穫物は、味噌・醤油・漬物・日本酒といった発酵食品に加工され、長期保存が可能になる。微生物の力で「腐敗」を「発酵」に転換する技術は、食の持続可能性そのものだ。ここには土壌微生物→作物→発酵微生物→食卓という「微生物リレー」が成立している。一次発酵が大地をつくり、二次発酵が食をつくる。この二段階の連続性を身体的に理解するには、畑で土に触り、台所で味噌を仕込む — その両方の経験が必要だ。",
+    links:["草堆肥・草農法の実践","発酵食品と地域の微生物相","緑肥と窒素固定のサイクル","種採りと在来品種の保全","土壌微生物→作物→発酵微生物の連続性"],
+    field:"台所の発酵食品を並べてみよう。味噌・醤油・酢・みりん・漬物・納豆…それぞれの原料（大豆、米、麦、野菜）をたどると、すべて里山の作物に行き着く。さらにその作物を育てた土壌には、一次発酵の微生物がいる。",
+    quiz:{q:"草堆肥に最も使われる里山の草は？",opts:["ススキやチガヤなどイネ科草本","タンポポやクローバー","シダ類"],a:0}},
+  {id:3,layer:"三次発酵",title:"人と地域のつながり",icon:"🏘️",color:"#7b1fa2",bg:"#f3e5f5",
+    principle:"土と食を介した共同作業が、時間をかけてコミュニティを「醸す」。",
+    content:"里山は一人ではつくれない。水路の維持管理、薪炭林の伐採、茅葺き屋根の葺き替え、田植え、稲刈り — すべて共同作業（結・ゆい）で行われてきた。この「一緒に汗をかく」経験の蓄積が、信頼と互助のコミュニティをつくる。祭りはその結晶であり、自然への感謝と人の絆を同時に確認する装置だ。三次発酵とは、この人と人、人と土地の関係が長い時間をかけて「熟成」していくプロセスを指す。味噌の発酵に時間が必要なように、コミュニティの信頼関係も一朝一夕には醸されない。しかしいったん醸された関係は、災害時の助け合い、子育ての分担、技術の伝承といった「社会の免疫力」として機能する。安宅和人氏の「風の谷」構想は、この三次発酵を現代に再構築する試みとも言える。",
+    links:["結（ゆい）と共同作業の文化","農事暦と祭礼のリンク","風の谷構想と新しいコミュニティ像","関係人口と里山の未来","社会関係資本（ソーシャルキャピタル）"],
+    field:"地元のお年寄りに「昔の共同作業」について一つ聞いてみよう。田植え、屋根の葺き替え、道普請、用水路の泥上げ…どんな話が出てくるだろうか。「どうやって参加者を集めたか」「サボった人はどうなったか」まで聞くと、三次発酵の仕組みが見えてくる。",
+    quiz:{q:"里山の共同作業の仕組みを何と呼ぶ？",opts:["結（ゆい）","談合","講（こう）"],a:0}},
+];
+
+/* ═══════════ DATA: 散策コース ═══════════ */
+
+const WALKS = [
+  {id:1,name:"雑木林と林床の春",season:"spring",diff:1,time:"40分",dist:"1.5km",envs:["雑木林","林縁"],desc:"コナラの若葉が展開し、林床にカタクリやスミレが一斉に花を咲かせる春の雑木林を歩く。萌芽更新の切り株から伸びる新芽を確認し、落ち葉の3層構造を手で確かめ、菌糸ネットワークを観察する。林縁ではいち早く花をつけるヤマザクラやコブシに出会えるかもしれない。",checks:["カタクリの群落を見つける","萌芽更新の切り株を確認","落ち葉3層の分解段階を観察","キツツキのドラミング（木を叩く音）を聞く"]},
+  {id:2,name:"谷戸の湧水と湿地",season:"spring",diff:1,time:"45分",dist:"1.3km",envs:["谷戸・湿地","小川"],desc:"丘陵の谷間に湧き出す水を辿り、グライ土（青灰色の還元土壌）と水辺の生き物に出会うコース。湧水ポイントで水温を測定し、エコトーン（水辺と陸地の境界）に集まる生き物の多様さを体感する。春はカエルの産卵ラッシュの時期で、卵塊の形状から種類を見分ける練習ができる。",checks:["湧水ポイントを探して水温を確認","グライ土を掘って色と質感を観察","カエルの卵塊を見つけて種を同定","セリやクレソンの群落を記録"]},
+  {id:3,name:"棚田の水と生き物",season:"summer",diff:1,time:"50分",dist:"1.8km",envs:["棚田・水田","草地"],desc:"青々と育つ稲の間を歩き、水田生態系の驚くべき多様性を体験する。水口（取水口）の構造を観察し、田面水の温度を測定し、イナゴ・トンボ・カエルたちの大合唱を聞く。畦に咲く草花も見逃せない。水田はただの農地ではなく、巨大な人工湿地であることを実感するコース。",checks:["水口の構造を観察しスケッチ","田面水の温度を数カ所で測定","イナゴ・トンボの種類を記録","畦の草花を5種類見つける"]},
+  {id:4,name:"渓流と苔の回廊",season:"summer",diff:2,time:"60分",dist:"2.5km",envs:["小川","雑木林"],desc:"涼しい渓流沿いを歩き、苔むした岩の上に土壌生成の最初の段階を見る。瀬（浅く速い流れ）と淵（深く緩い流れ）の交互パターンを確認し、底質の違いで棲み分ける水生昆虫を観察する。サワガニを探し、水温の上下流差を測定する。夏でも涼しい、里山の「天然クーラー」コース。",checks:["瀬と淵を3セット以上確認","苔の種類を観察（スギゴケ・ハイゴケ等）","サワガニを見つける","水温を上流と下流で比較測定"]},
+  {id:5,name:"紅葉と菌類の尾根",season:"autumn",diff:2,time:"55分",dist:"2.2km",envs:["雑木林","林縁"],desc:"色づくモミジ・ケヤキ・コナラのグラデーションを楽しみながら尾根を歩き、キノコたちが担う「分解者」の仕事を目撃する。菌根菌の子実体、倒木上のサルノコシカケ、落ち葉を分解する小さなキノコ — 足元には目に見える一次発酵の現場が広がっている。ドングリの種類比較やリスの食痕も楽しい。",checks:["紅葉のグラデーションを写真に記録","菌根菌の子実体（キノコ）を3種類以上見つける","ドングリの種類を比較（コナラ・クヌギ・シラカシ）","リスやネズミの食痕（齧り跡）を探す"]},
+  {id:6,name:"草原と秋の七草",season:"autumn",diff:1,time:"35分",dist:"1.2km",envs:["草地","林縁"],desc:"ススキの原をかき分け、秋の七草と里山の草文化を味わうコース。ハギ・ススキ・クズ・ナデシコ・オミナエシ・フジバカマ・キキョウ — 全種見つけられるか挑戦してみよう。バッタの種類を数え、草の根を1本抜いて根の深さと広がりを観察する。草堆肥の材料であるススキを手で触り、その繊維の強さを実感する。",checks:["秋の七草を何種類見つけられるか","バッタの種類を3種以上確認","草を1株抜いて根の深さを測定","ススキの茎を触って繊維の硬さを確認"]},
+  {id:7,name:"冬鳥と落葉の森",season:"winter",diff:1,time:"35分",dist:"1.0km",envs:["雑木林","谷戸・湿地"],desc:"葉を落とした明るい森で野鳥を観察する、冬ならではのコース。エナガ・シジュウカラ・コゲラなどの混群が林を移動する様子を追い、冬芽の形で樹種を同定する練習をする。霜柱を踏み、落ち葉堆肥の山に手を突っ込んで発酵熱（40〜60℃にもなる）を体感する。土壌が「寝かされる」冬の里山を歩く。",checks:["混群（エナガ・シジュウカラ等）を観察","冬芽の形を3種類以上スケッチ","霜柱の高さと構造を観察","落ち葉堆肥の温度を手で確認"]},
+  {id:8,name:"里の暮らし探訪",season:"winter",diff:1,time:"40分",dist:"1.5km",envs:["棚田・水田","草地"],desc:"冬枯れの田畑と屋敷林を巡り、里山の文化的景観を読み解くコース。屋敷林の樹種（ケヤキ・シイ）から防風の知恵を読み取り、石垣や土壁の構造を観察する。冬水田んぼ（冬期湛水）を実施している田があれば水鳥の楽園に。生け垣の樹種を同定し、その「生態系の回廊」としての機能を考察する。",checks:["屋敷林の樹種を3種以上同定","石垣・土壁の素材と構造を観察","冬水田んぼの水鳥を記録","生け垣の樹種と機能を考察"]},
+];
+
+/* ═══════════ UI Components ═══════════ */
+
+function Badge({children, color, bg}) {
+  const c = color || "#5d4037";
+  return <span style={{display:"inline-flex",alignItems:"center",gap:3,padding:"3px 10px",borderRadius:20,background:bg||c+"18",color:c,fontSize:11,fontWeight:600,fontFamily:FB}}>{children}</span>;
+}
+function Card({children, style, onClick}) {
+  return <div onClick={onClick} style={{background:"rgba(255,255,255,0.92)",backdropFilter:"blur(8px)",borderRadius:18,padding:20,boxShadow:"0 2px 16px rgba(60,40,20,0.06)",cursor:onClick?"pointer":"default",transition:"all 0.2s",...(style||{})}}>{children}</div>;
+}
+function BackBtn({onClick, color}) {
+  return <button onClick={onClick} style={{background:"none",border:"none",cursor:"pointer",color:color||"#5d4037",fontFamily:FB,fontSize:14,display:"flex",alignItems:"center",gap:4,marginBottom:14,padding:0}}>← もどる</button>;
+}
+function STitle({children, sub}) {
+  return <div style={{marginBottom:16}}><h2 style={{fontFamily:FT,color:"#2e1a0e",fontSize:22,fontWeight:700,letterSpacing:1}}>{children}</h2>{sub&&<p style={{color:"#a1887f",fontSize:12,marginTop:4,fontFamily:FB}}>{sub}</p>}</div>;
+}
+function Acc({title, children, defaultOpen}) {
+  const [open, setOpen] = useState(!!defaultOpen);
+  return <div style={{marginBottom:8}}>
+    <button onClick={() => setOpen(!open)} style={{width:"100%",padding:"12px 16px",borderRadius:open?"12px 12px 0 0":"12px",border:"1px solid #e8e0d8",borderBottom:open?"none":"1px solid #e8e0d8",background:open?"#faf6f1":"rgba(255,255,255,0.8)",cursor:"pointer",textAlign:"left",fontFamily:FB,fontSize:14,color:"#3e2723",display:"flex",alignItems:"center",gap:8}}>
+      <span style={{flex:1,fontWeight:600}}>{title}</span>
+      <span style={{fontSize:12,color:"#bcaaa4",transition:"transform 0.2s",transform:open?"rotate(180deg)":"none"}}>▼</span>
+    </button>
+    {open&&<div style={{padding:"14px 16px",borderRadius:"0 0 12px 12px",border:"1px solid #e8e0d8",borderTop:"none",background:"#faf6f1",animation:"fadeIn .25s ease",fontSize:13,color:"#5d4037",lineHeight:1.85}}>{children}</div>}
+  </div>;
+}
+function PRing({value, max}) {
+  const sz=44,cl="#5d4037",pct=max>0?value/max:0,r=19,c=2*Math.PI*r;
+  return <svg width={sz} height={sz} style={{transform:"rotate(-90deg)"}}><circle cx={22} cy={22} r={r} fill="none" stroke="#e8e0d8" strokeWidth={3}/><circle cx={22} cy={22} r={r} fill="none" stroke={cl} strokeWidth={3} strokeDasharray={c} strokeDashoffset={c*(1-pct)} strokeLinecap="round" style={{transition:"stroke-dashoffset .5s ease"}}/><text x={22} y={22} textAnchor="middle" dominantBaseline="central" fill={cl} fontSize={10} fontWeight={700} style={{transform:"rotate(90deg)",transformOrigin:"center"}}>{value}</text></svg>;
+}
+
+/* ═══════════ HOME TAB ═══════════ */
+
+function HomeTab({season, setSeason, setTab}) {
+  const s = SEASONS[season];
+  const [selWalk, setSelWalk] = useState(null);
+
+  if (selWalk) {
+    const w = selWalk;
+    return <div style={{animation:"slideUp .35s ease"}}>
+      <BackBtn onClick={() => setSelWalk(null)} color={s.accent}/>
+      <Card style={{borderLeft:"4px solid "+s.accent}}>
+        <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8,flexWrap:"wrap"}}>
+          {w.envs.map(e => <Badge key={e} color={s.accent}>{e}</Badge>)}
+        </div>
+        <h2 style={{fontFamily:FT,fontSize:20,color:"#2e1a0e",marginBottom:4}}>{w.name}</h2>
+        <div style={{fontSize:12,color:"#a1887f",marginBottom:16,display:"flex",gap:12}}>
+          <span>{"⏱ "+w.time}</span><span>{"📏 "+w.dist}</span><span>{"●".repeat(w.diff)+"○".repeat(3-w.diff)}</span>
+        </div>
+        <p style={{fontSize:14,color:"#4e342e",lineHeight:1.9,fontFamily:FB,marginBottom:20}}>{w.desc}</p>
+        <div style={{background:"#fff8e1",borderRadius:14,padding:"14px 18px"}}>
+          <div style={{fontSize:12,color:"#f57f17",fontWeight:700,marginBottom:8,fontFamily:FB}}>🔍 チェックポイント</div>
+          {w.checks.map((ch, i) => <div key={i} style={{fontSize:13,color:"#5d4037",lineHeight:1.7,fontFamily:FB,paddingLeft:16,position:"relative",marginBottom:4}}><span style={{position:"absolute",left:0}}>☐</span>{ch}</div>)}
+        </div>
+      </Card>
+    </div>;
+  }
+
+  return <div>
+    <div style={{textAlign:"center",marginBottom:24,animation:"slideUp .5s ease"}}>
+      <div style={{fontSize:48,marginBottom:8}}>{s.emoji}</div>
+      <h1 style={{fontFamily:FT,color:"#2e1a0e",fontSize:28,letterSpacing:3,fontWeight:800}}>里山のしおり</h1>
+      <p style={{fontFamily:FT,color:"#a1887f",fontSize:12,marginTop:6,letterSpacing:4}}>SATOYAMA FIELD GUIDE</p>
+      <p style={{fontFamily:FB,color:"#bcaaa4",fontSize:10,marginTop:4,letterSpacing:2}}>by mitsulab</p>
+      <div style={{display:"flex",gap:6,justifyContent:"center",marginTop:14}}>
+        {Object.entries(SEASONS).map(([k,v]) => <button key={k} onClick={() => setSeason(k)} style={{padding:"5px 12px",borderRadius:20,border:season===k?"2px solid "+v.accent:"2px solid transparent",background:season===k?v.accent+"18":"rgba(255,255,255,0.6)",color:season===k?v.accent:"#a1887f",fontSize:12,cursor:"pointer",fontFamily:FB,fontWeight:season===k?700:400,transition:"all 0.2s"}}>{v.emoji+" "+v.label}</button>)}
+      </div>
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      {[
+        {tab:"env",icon:"🌳",title:"里山の環境",desc:"6つの環境を分類・観察する",color:"#4caf50"},
+        {tab:"life",icon:"🦋",title:"生態系図鑑",desc:ECO.reduce((a,c)=>a+c.items.length,0)+"種を記録",color:"#e65100"},
+        {tab:"living",icon:"🏡",title:"暮らし・農業・文化",desc:"里山を支える人の営み",color:"#7b1fa2"},
+        {tab:"ferment",icon:"🌀",title:"醸す谷 Vallis Fermenti",desc:"三層の発酵で里山を読み解く",color:"#5d4037"},
+      ].map((item,i) => <Card key={item.tab} onClick={() => setTab(item.tab)} style={{animation:"slideUp .4s ease "+(0.1+i*0.07)+"s both",borderLeft:"4px solid "+item.color}}>
+        <div style={{display:"flex",alignItems:"center",gap:14}}>
+          <span style={{fontSize:28,width:48,height:48,borderRadius:14,background:item.color+"12",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{item.icon}</span>
+          <div style={{flex:1}}><div style={{fontFamily:FT,fontSize:16,color:"#2e1a0e",fontWeight:700}}>{item.title}</div><div style={{fontSize:12,color:"#a1887f",marginTop:2,fontFamily:FB}}>{item.desc}</div></div>
+          <span style={{color:"#d7ccc8",fontSize:18}}>→</span>
+        </div>
+      </Card>)}
+    </div>
+    <div style={{marginTop:24}}>
+      <div style={{fontFamily:FT,fontSize:16,color:"#2e1a0e",fontWeight:700,marginBottom:10}}>{s.emoji+" "+s.label+"のおすすめコース"}</div>
+      {WALKS.filter(c => c.season===season).map((c,i) => <Card key={c.id} onClick={() => setSelWalk(c)} style={{marginBottom:8,padding:14,animation:"slideUp .35s ease "+(0.3+i*.06)+"s both",borderLeft:"3px solid "+s.accent}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontFamily:FB,fontSize:14,color:"#3e2723",fontWeight:600}}>{c.name}</div>
+            <div style={{fontSize:12,color:"#a1887f",marginTop:4,display:"flex",gap:12}}>
+              <span>{"⏱ "+c.time}</span><span>{"📏 "+c.dist}</span><span>{"●".repeat(c.diff)+"○".repeat(3-c.diff)}</span>
+            </div>
+          </div>
+          <span style={{color:"#d7ccc8",fontSize:16}}>→</span>
+        </div>
+      </Card>)}
+    </div>
+  </div>;
+}
+
+/* ═══════════ ENV TAB ═══════════ */
+
+function EnvTab({season}) {
+  const [sel, setSel] = useState(null);
+  if (sel !== null) {
+    const env = ENVS[sel], sn = env.sn[season], ss = SEASONS[season];
+    return <div style={{animation:"slideUp .35s ease"}}><BackBtn onClick={() => setSel(null)} color={env.color}/>
+      <Card style={{border:"2px solid "+env.color+"22"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><span style={{fontSize:36}}>{env.icon}</span><div><h2 style={{fontFamily:FT,fontSize:22,color:"#2e1a0e"}}>{env.name}</h2><p style={{fontSize:12,color:"#a1887f",fontFamily:FB}}>{env.summary}</p></div></div>
+        <p style={{fontSize:14,color:"#4e342e",lineHeight:1.9,marginBottom:16,fontFamily:FB}}>{env.detail}</p>
+        {sn&&<div style={{padding:"10px 14px",borderRadius:12,background:ss.accent+"10",marginBottom:14}}><div style={{fontSize:11,color:ss.accent,fontWeight:700,fontFamily:FB}}>{ss.emoji+" "+ss.label+"の見どころ"}</div><div style={{fontSize:13,color:"#4e342e",marginTop:4,fontFamily:FB,lineHeight:1.8}}>{sn}</div></div>}
+        <Acc title="🪱 土壌のしくみ">{env.soil}</Acc>
+        <Acc title="🔍 観察ポイント"><ul style={{margin:0,paddingLeft:18}}>{env.observe.map((o,i)=><li key={i} style={{marginBottom:6}}>{o}</li>)}</ul></Acc>
+        <Acc title="🦋 代表的な生き物"><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{env.creatures.map(c=><Badge key={c} color={env.color}>{c}</Badge>)}</div></Acc>
+      </Card>
+    </div>;
+  }
+  return <div><STitle sub="里山を構成する6つの環境を分類・観察する">里山の環境</STitle>
+    <div style={{display:"flex",flexDirection:"column",gap:10}}>{ENVS.map((env,i)=><Card key={env.id} onClick={()=>setSel(i)} style={{animation:"slideUp .35s ease "+i*.06+"s both",borderLeft:"4px solid "+env.color}}><div style={{display:"flex",alignItems:"center",gap:14}}><span style={{fontSize:30,width:50,height:50,borderRadius:14,background:env.color+"12",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{env.icon}</span><div style={{flex:1}}><div style={{fontFamily:FT,fontSize:16,color:"#2e1a0e",fontWeight:700}}>{env.name}</div><div style={{fontSize:12,color:"#8d6e63",marginTop:3,lineHeight:1.6,fontFamily:FB}}>{env.summary}</div></div><span style={{color:"#d7ccc8",fontSize:16}}>→</span></div></Card>)}</div>
+  </div>;
+}
+
+/* ═══════════ LIFE TAB ═══════════ */
+
+function LifeTab() {
+  const [ac, setAc] = useState(0);
+  const [disc, setDisc] = useState([]);
+  const [si, setSi] = useState(null);
+  const total = ECO.reduce((a,c)=>a+c.items.length,0);
+  const cat = ECO[ac];
+  if (si) return <div style={{animation:"slideUp .3s ease"}}><BackBtn onClick={()=>setSi(null)}/><Card><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><span style={{fontSize:32}}>{ECO[ac].icon}</span><div><h2 style={{fontFamily:FT,fontSize:22,color:"#2e1a0e"}}>{si.name}</h2><Badge>{si.env}</Badge></div></div><p style={{fontSize:14,color:"#4e342e",lineHeight:1.9,fontFamily:FB}}>{si.note}</p><button onClick={()=>setDisc(d=>d.includes(si.name)?d.filter(x=>x!==si.name):[...d,si.name])} style={{marginTop:16,padding:"10px 20px",borderRadius:12,border:"none",cursor:"pointer",background:disc.includes(si.name)?"#4caf50":"#5d4037",color:"white",fontFamily:FB,fontSize:14}}>{disc.includes(si.name)?"✓ 発見済み — 取り消す":"発見した！"}</button></Card></div>;
+  return <div><STitle sub={total+"種の動植物・菌類・土壌生物を記録しよう"}>生態系図鑑</STitle>
+    <Card style={{padding:14,marginBottom:16,display:"flex",alignItems:"center",gap:14}}><PRing value={disc.length} max={total}/><div><div style={{fontFamily:FB,fontWeight:700,color:"#3e2723",fontSize:14}}>{disc.length+" / "+total+" 種を発見"}</div><div style={{fontSize:11,color:"#a1887f",marginTop:2}}>{disc.length===0?"タップで記録しよう":disc.length>=total?"🎉 コンプリート！":"あと "+(total-disc.length)+" 種"}</div></div></Card>
+    <div style={{display:"flex",gap:4,marginBottom:16,overflowX:"auto",paddingBottom:4}}>{ECO.map((c,i)=>{const cd=c.items.filter(it=>disc.includes(it.name)).length;return<button key={c.cat} onClick={()=>setAc(i)} style={{padding:"8px 10px",borderRadius:12,border:"none",cursor:"pointer",background:ac===i?"#3e2723":"rgba(255,255,255,0.8)",color:ac===i?"white":"#5d4037",fontSize:11,fontFamily:FB,flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",gap:2,boxShadow:"0 1px 4px rgba(0,0,0,.05)",minWidth:54}}><span style={{fontSize:18}}>{c.icon}</span><span>{c.cat}</span><span style={{fontSize:9,opacity:.7}}>{cd+"/"+c.items.length}</span></button>})}</div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{cat.items.map((item,i)=>{const found=disc.includes(item.name);return<Card key={item.name} onClick={()=>setSi(item)} style={{padding:14,textAlign:"center",animation:"slideUp .3s ease "+i*.04+"s both",boxShadow:found?"inset 0 0 0 2px #4caf50":"0 1px 8px rgba(0,0,0,.04)"}}>{found&&<div style={{fontSize:10,color:"#4caf50",fontWeight:700,marginBottom:2,fontFamily:FB}}>✓ 発見</div>}<div style={{fontFamily:FB,fontSize:14,color:"#3e2723",fontWeight:600}}>{item.name}</div><div style={{fontSize:10,color:"#a1887f",marginTop:3}}>{item.env}</div></Card>})}</div>
+  </div>;
+}
+
+/* ═══════════ LIVING TAB ═══════════ */
+
+function LivingTab() {
+  const [sec, setSec] = useState(0);
+  const [si, setSi] = useState(null);
+  const cur = LIVING[sec];
+  if (si) return <div style={{animation:"slideUp .3s ease"}}><BackBtn onClick={()=>setSi(null)} color={cur.color}/><Card style={{border:"2px solid "+cur.color+"22"}}><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><span style={{fontSize:28,width:48,height:48,borderRadius:14,background:cur.color+"12",display:"flex",alignItems:"center",justifyContent:"center"}}>{cur.icon}</span><div><h2 style={{fontFamily:FT,fontSize:20,color:"#2e1a0e"}}>{si.name}</h2><Badge color={cur.color}>{si.season}</Badge></div></div><p style={{fontSize:14,color:"#4e342e",lineHeight:1.9,fontFamily:FB}}>{si.desc}</p></Card></div>;
+  return <div><STitle sub="里山を支える農業・山仕事・文化の知恵">暮らし・農業・文化</STitle>
+    <div style={{display:"flex",gap:6,marginBottom:18}}>{LIVING.map((s,i)=><button key={s.id} onClick={()=>{setSec(i);setSi(null)}} style={{flex:1,padding:"10px 6px",borderRadius:14,border:"none",cursor:"pointer",background:sec===i?s.color:"rgba(255,255,255,0.8)",color:sec===i?"white":"#5d4037",fontSize:12,fontFamily:FB,fontWeight:sec===i?700:400,boxShadow:"0 1px 6px rgba(0,0,0,.05)",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}><span style={{fontSize:20}}>{s.icon}</span>{s.title.replace("里山の","")}</button>)}</div>
+    <div style={{display:"flex",flexDirection:"column",gap:8}}>{cur.items.map((item,i)=><Card key={item.name} onClick={()=>setSi(item)} style={{padding:16,animation:"slideUp .3s ease "+i*.05+"s both",borderLeft:"3px solid "+cur.color}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"start"}}><div style={{flex:1}}><div style={{fontFamily:FT,fontSize:15,color:"#2e1a0e",fontWeight:700}}>{item.name}</div><div style={{fontSize:12,color:"#8d6e63",marginTop:4,lineHeight:1.6,fontFamily:FB,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{item.desc}</div><div style={{marginTop:6}}><Badge color={cur.color} bg={cur.color+"10"}>{item.season}</Badge></div></div><span style={{color:"#d7ccc8",fontSize:16,marginLeft:8,flexShrink:0}}>→</span></div></Card>)}</div>
+  </div>;
+}
+
+/* ═══════════ FERMENT TAB ═══════════ */
+
+function FermentTab() {
+  const [al, setAl] = useState(null);
+  const [qa, setQa] = useState(null);
+  if (al !== null) {
+    const cy = FERM[al];
+    return <div style={{animation:"slideUp .35s ease"}}><BackBtn onClick={()=>{setAl(null);setQa(null)}} color={cy.color}/>
+      <Card style={{border:"2px solid "+cy.color+"22"}}>
+        <div style={{fontSize:42,marginBottom:8}}>{cy.icon}</div><Badge color={cy.color}>{cy.layer}</Badge>
+        <h2 style={{fontFamily:FT,fontSize:22,color:"#2e1a0e",marginTop:8}}>{cy.title}</h2>
+        <p style={{fontFamily:FT,fontSize:13,color:cy.color,marginTop:4,marginBottom:16,fontStyle:"italic",lineHeight:1.7}}>{"「"+cy.principle+"」"}</p>
+        <p style={{fontSize:14,color:"#4e342e",lineHeight:1.95,fontFamily:FB,marginBottom:20}}>{cy.content}</p>
+        <Acc title="🔗 つながるキーワード" defaultOpen={true}><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{cy.links.map(c=><Badge key={c} color={cy.color}>{c}</Badge>)}</div></Acc>
+        <Acc title="🥾 フィールドワーク"><p style={{margin:0}}>{cy.field}</p></Acc>
+        <div style={{marginTop:12,padding:"16px 18px",borderRadius:14,background:cy.bg}}>
+          <div style={{fontSize:12,fontWeight:700,color:cy.color,marginBottom:8,fontFamily:FB}}>🧠 ミニクイズ</div>
+          <p style={{fontFamily:FB,fontSize:14,color:"#2e1a0e",marginBottom:12,fontWeight:600}}>{cy.quiz.q}</p>
+          {cy.quiz.opts.map((opt,i)=>{const correct=i===cy.quiz.a,picked=qa===i;let bg2="white",bd="1px solid #e0d6cf";if(qa!==null&&correct){bg2="#e8f5e9";bd="2px solid #4caf50"}else if(picked&&!correct){bg2="#ffebee";bd="2px solid #e53935"}return<button key={i} onClick={()=>setQa(i)} disabled={qa!==null} style={{display:"block",width:"100%",padding:"10px 14px",borderRadius:10,border:bd,background:bg2,cursor:qa!==null?"default":"pointer",textAlign:"left",fontSize:13,color:"#3e2723",fontFamily:FB,marginBottom:6}}>{qa!==null&&correct&&"✅ "}{picked&&!correct&&"❌ "}{opt}</button>})}
+          {qa!==null&&<p style={{fontSize:13,marginTop:6,fontFamily:FB,animation:"fadeIn .3s",color:qa===cy.quiz.a?"#2e7d32":"#c62828"}}>{qa===cy.quiz.a?"正解！🎉":"正解は「"+cy.quiz.opts[cy.quiz.a]+"」です"}</p>}
+        </div>
+      </Card>
+    </div>;
+  }
+  return <div><STitle sub="三層の発酵サイクルで里山の循環を読み解く">醸す谷 — Vallis Fermenti</STitle>
+    <Card style={{marginBottom:20,textAlign:"center",padding:24}}><div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:0,flexWrap:"wrap"}}>{FERM.map((c,i)=><div key={c.id} style={{display:"flex",alignItems:"center"}}><div style={{padding:"10px 16px",borderRadius:14,background:c.bg,border:"2px solid "+c.color+"30",textAlign:"center"}}><div style={{fontSize:24}}>{c.icon}</div><div style={{fontFamily:FT,fontSize:12,color:c.color,fontWeight:700,marginTop:4}}>{c.layer}</div></div>{i<2&&<span style={{fontSize:18,color:"#d7ccc8",margin:"0 6px"}}>→</span>}</div>)}</div><div style={{fontSize:20,color:"#d7ccc8",marginTop:8}}>↻</div><p style={{fontFamily:FT,fontSize:11,color:"#a1887f",marginTop:4,fontStyle:"italic"}}>三つの発酵が巡る里山の循環</p></Card>
+    {FERM.map((cy,i)=><Card key={cy.id} onClick={()=>setAl(i)} style={{marginBottom:10,borderLeft:"4px solid "+cy.color,animation:"slideUp .35s ease "+i*.08+"s both"}}><div style={{display:"flex",alignItems:"center",gap:14}}><span style={{fontSize:30,width:56,height:56,borderRadius:16,background:cy.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{cy.icon}</span><div style={{flex:1}}><Badge color={cy.color}>{cy.layer}</Badge><div style={{fontFamily:FT,fontSize:16,color:"#2e1a0e",fontWeight:700,marginTop:4}}>{cy.title}</div><div style={{fontSize:12,color:"#8d6e63",marginTop:2,fontFamily:FB,fontStyle:"italic"}}>{cy.principle}</div></div><span style={{color:"#d7ccc8"}}>→</span></div></Card>)}
+  </div>;
+}
+
+/* ═══════════ BG ═══════════ */
+
+function BgLayer({season}) {
+  const s = SEASONS[season];
+  const ps = [];
+  for (let i=0;i<14;i++) ps.push(<span key={i} style={{position:"absolute",left:((i*7.1+3)%100)+"%",top:-30,fontSize:12+(i%4)*5,opacity:.12+(i%3)*.04,animation:"fall "+(7+i*1.4)+"s linear "+i*.8+"s infinite",pointerEvents:"none"}}>{s.particle}</span>);
+  return <div style={{position:"fixed",inset:0,background:s.grad,zIndex:0,overflow:"hidden",pointerEvents:"none"}}>{ps}</div>;
+}
+
+/* ═══════════ MAIN ═══════════ */
+
+function App() {
+  const [tab, setTab] = useState("home");
+  const [season, setSeason] = useState(curSeason());
+  const s = SEASONS[season];
+  let content = null;
+  switch(tab) {
+    case "home": content=<HomeTab season={season} setSeason={setSeason} setTab={setTab}/>; break;
+    case "env": content=<EnvTab season={season}/>; break;
+    case "life": content=<LifeTab/>; break;
+    case "living": content=<LivingTab/>; break;
+    case "ferment": content=<FermentTab/>; break;
+  }
+  return <div style={{minHeight:"100vh",fontFamily:FB,position:"relative"}}>
+    <BgLayer season={season}/>
+    <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",padding:"16px 16px 100px"}}>{content}</div>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:10,background:"rgba(255,255,255,0.88)",backdropFilter:"blur(20px)",borderTop:"1px solid #e8e0d8",padding:"4px 0 env(safe-area-inset-bottom, 6px)"}}>
+      <div style={{display:"flex",maxWidth:520,margin:"0 auto"}}>{TABS.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1,padding:"7px 2px",color:tab===t.id?s.accent:"#bcaaa4",transition:"all 0.2s"}}><span style={{fontSize:20,transform:tab===t.id?"scale(1.15)":"scale(1)",transition:"transform 0.2s"}}>{t.icon}</span><span style={{fontSize:9,fontFamily:FB,fontWeight:tab===t.id?700:400,letterSpacing:.5}}>{t.label}</span>{tab===t.id&&<span style={{width:4,height:4,borderRadius:"50%",background:s.accent}}/>}</button>)}</div>
+    </div>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
